@@ -22,10 +22,11 @@
   <script src="https://kit.fontawesome.com/1d156e89e1.js" crossorigin="anonymous"></script>
 
   <!-- FavIcon -->
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+  <link rel="shortcut icon" href="#">
+<!--  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
-  <link rel="manifest" href="/site.webmanifest">
+  <link rel="manifest" href="/site.webmanifest"> -->
 
 </head>
 <body>
@@ -51,7 +52,7 @@
 							DISCLAIMER:
             </div>
             <div class="card-body">
-              <p>The hereby presented tool uses a mathematical model to simulate epidemic outcomes scenarios of two arbitrary competing diseasesm, based on user-defined parameters. This output of the model depends on model assumptions and parameter choices.
+              <p>The hereby presented tool uses a mathematical model to simulate epidemic outcomes scenarios of two arbitrary competing diseases, based on user-defined parameters. This output of the model depends on model assumptions and parameter choices.
               </p>
               <p>It is not a medical predictor, and should be used for informational and research purposes only. Please carefully consider the parameters you choose, and whether the spreading mechanism of the disease you intend to study are captured by a mean-field SIR-like model. Interpret and use the simulated results responsibly. Authors are not liable for any direct or indirect consequences of this usage.
               </p>
@@ -95,7 +96,24 @@
             </div>
           </div>
 
-          <div class="card" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              Feedback parameters
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#parameters_collapse" aria-expanded="false" aria-controls="parameters_collapse" style="float: right;">
+                  Open/Close
+                </button>
+            </div>
+            <div id="parameters_collapse" class="collapse">
+              <div class="card-body" >
+                Parameters for voluntary contact reduction, modeled as a feedback loop from active cases to contact rate. Short descriptions of the parameters can be accessed by hovering over the question-mark icon.
+                <hr>
+              </div>
+              <div id="feedback_parameters" class="card-body interactive_form">
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
             <div class="card-header">
               Modulation intensity of contagious contacts and external influx
                 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#contact_collapse" aria-expanded="false" aria-controls="contact_collapse" style="float: right;">

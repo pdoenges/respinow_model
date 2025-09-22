@@ -39,9 +39,6 @@ function model_run() {
   // from the model wasm
   // e.g models["foo"] = bar; -> model.set_foo(bar)
   var params = {}
-  for (key in parameters) {
-    params[key] = parseFloat(parameters[key]["value"])
-  }
   for (key in main_parameters) {
 //    if (key == R) continue; // ? we do not set R
     params[key] = parseFloat(main_parameters[key]["value"])
@@ -49,9 +46,9 @@ function model_run() {
   for (key in season_parameters) {
     params[key] = parseFloat(season_parameters[key]["value"])
   }
-//  for (key in spezial) {
-//    params[key] = spezial[key]["cpp"]
-//  }
+  for (key in spezial) {
+    params[key] = spezial[key]["cpp"]
+  }
   model = update_model_params(model, params);
 
   // Create initial values for the model
@@ -60,8 +57,6 @@ function model_run() {
   for (key in initials) {
     init[key] = parseFloat(initials[key]["value"])
   }
-//  init["R"] = parseFloat(main_parameters["R"]["value"] * SUSCEPTIBLE * 100)
-//  init["S"] = SUSCEPTIBLE - init["E_Q"] - init["E_H"] - init["I_Q"] - init["I_H"];
 
   // Run the model using the 
   // initial values
@@ -97,7 +92,8 @@ function update_model_params(model, kwargs) {
     "nu_1", "nu_2",
     "d0_1", "d0_2",
     "theta_1", "theta_2",
-    "k_min", "H_thres", "epsilon"];
+    "k_min", "H_thres", "epsilon",
+    "k_t", "Phi_1_t", "Phi_2_t"];
 
 
   for (var key in kwargs) {
@@ -116,8 +112,8 @@ function save_data(model, dat) {
   var I_1 = [];
   var I_2 = [];
 
-  var Repro_number_1 = [];
-  var Repro_number_2 = [];
+//  var Repro_number_1 = [];
+//  var Repro_number_2 = [];
 
   var SS = [];
   var SI = [];
@@ -136,10 +132,10 @@ function save_data(model, dat) {
       I_2.push([time[i]/360, (dat.SI()[i] + dat.II()[i] + dat.RI()[i])*1000 ]);
 
       //reproduction numbers
-      if (i >= 4) {
-        Repro_number_1.push([time[i]/360, I_1[i] / I_1[i - 4]]);
-        Repro_number_2.push([time[i]/360, I_2[i] / I_2[i - 4]]);
-      }
+//      if (i >= 4) {
+//        Repro_number_1.push([time[i]/360, I_1[i] / I_1[i - 4]]);
+//        Repro_number_2.push([time[i]/360, I_2[i] / I_2[i - 4]]);
+//      }
 
       //compartments
       SS.push([time[i]/360, dat.SS()[i]]);
@@ -154,16 +150,13 @@ function save_data(model, dat) {
     }
   }
 
-  console.log(I_1)
-  console.log(Repro_number_1)
-
   data = {
     "NewCases":
       [
         {
           name: "Disease 1",
           data: I_1,
-          dashStyle: 'DashDot',
+          dashStyle: 'Line',
         },
         {
           name: "Disease 2",
@@ -171,18 +164,18 @@ function save_data(model, dat) {
           dashStyle: 'Line',
         },
       ],
-    "Rs":
-      [{
-        name: "Disease 1",
-        dashStyle: 'DashDot',
-        data: Repro_number_1,
-      },
-      {
-        name: "Disease 2",
-        dashStyle: 'Line',
-        data: Repro_number_2,
-      },
-      ],
+//    "Rs":
+//      [{
+//        name: "Disease 1",
+//        dashStyle: 'DashDot',
+//        data: Repro_number_1,
+//      },
+//      {
+//        name: "Disease 2",
+//        dashStyle: 'Line',
+//        data: Repro_number_2,
+//      },
+//      ],
     "Compartments":
       [{
         name: "Susceptible - Susceptible",
@@ -291,9 +284,6 @@ var main_parameters = {
   },
 }
 
-//    "nu_1", "nu_2",
-//    "d0_1", "d0_2",
-
 var season_parameters = {
   "nu_1": {
     "id": "nu_1",
@@ -333,89 +323,54 @@ var season_parameters = {
   },
 }
 
-var parameters = {
-  "gamma": {
-    "id": "gamma",
-    "name": "Recovery/removal rate",
-    "math": "&gamma;",
-    "min": 0.08,
-    "max": 0.12,
-    "value": 0.10,
-    "description": "TODO"
-  },
-  "xi": {
-    "id": "xi",
-    "name": "Asymptomatic ratio",
-    "math": "&xi;",
-    "min": 0.15,
-    "max": 0.45,
-    "value": 0.32,
-    "description": "TODO"
-  },
-  "nu": {
-    "id": "nu",
-    "name": "Registered contacts (quarantined)",
-    "math": "&nu;",
-    "min": 0.01,
-    "max": 0.15,
-    "value": 0.075,
-    "description": "TODO"
-  },
-  "lambda_r_prime": {
-    "id": "lambda_r_prime",
-    "name": "Random-testing rate (reducedcapacity)",
-    "math": "&lambda;<sub>r</sub><sup>'<sup>",
-    "min": 0.00,
-    "max": 0.20,
-    "value": 0.0,
-    "description": "TODO"
-  },
-  "lambda_s_prime": {
-    "id": "lambda_s_prime",
-    "name": "Symptom-driven testing rate (reducedcapacity)",
-    "math": "&lambda;<sub>s</sub><sup>'<sup>",
-    "min": 0.00,
-    "max": 1.00,
-    "value": 0.1,
-    "description": "TODO"
-  },
-  "tau": {
-    "id": "tau",
-    "name": "Contact tracing delay",
-    "math": "&tau;",
+var feedback_parameters = {
+  "theta_1": {
+    "id": "theta_1",
+    "name": "Perceived risk disease 1",
+    "math": "&vartheta;<sub>1</sub>",
     "min": 0.0,
-    "max": 5.0,
-    "value": 2,
-    "description": "TODO"
+    "max": 2.0,
+    "value": 1.0,
+    "description": "Weigh of perceived risk caused by first disease."
   },
-  "epsilon": {
-    "id": "epsilon",
-    "name": "Lost contacts (quarantined)",
-    "math": "&epsilon;",
+  "theta_2": {
+    "id": "theta_2",
+    "name": "Perceived risk disease 2",
+    "math": "&vartheta;<sub>2</sub>",
     "min": 0.0,
-    "max": 0.5,
-    "value": 0.05,
-    "description": "TODO"
+    "max": 2.0,
+    "value": 1.0,
+    "description": "Weigh of perceived risk caused by second disease."
   },
-  "rho": {
-    "id": "rho",
-    "name": "Exposed-to-infectious rate",
-    "math": "&rho;",
-    "min": 0.0,
-    "max": 0.5,
-    "value": 0.25,
-    "description": "TODO"
-  },
-  "phi": {
-    "id": "phi",
-    "name": "Ratio symptomatic hidden to symptomatic (I pool)",
-    "math": "&phi;",
+  "k_min": {
+    "id": "k_min",
+    "name": "Minimal contact rate",
+    "math": "k<sub>min</sub>",
     "min": 0.0,
     "max": 1.0,
-    "value": 0.4,
-    "description": "TODO"
+    "value": 0.2,
+    "description": "Minimal contact rate reached by voluntary contact reduction."
   },
+//  "H_thres": {
+//    "id": "H_thres",
+//    "name": "Threshold of perceived risk",
+//    "math": "H<sub>thres</sub>",
+//    "min": 0.00,
+//    "max": 0.01,
+//    "value": 0.2,
+//    "description": "Minimal contact rate reached by voluntary contact reduction."
+//  },
+//  "epsilon": {
+//    "id": "epsilon",
+//    "name": "shape parameter of the softplus function",
+//    "math": "H<sub>thres</sub>",
+//    "min": 0.00,
+//    "max": 0.002,
+//    "value": 0.2,
+//    "description": "shape parameter of the softplus function"
+//  },
 }
+
 
 var initials = {
   "SS": {
@@ -513,14 +468,25 @@ var spezial = {
     "change_points": 0,
     "peak": 0,
   },
-  "Phi_t": {
-    "id": "Phi_t",
-    "name": "External influx",
-    "math": "&phiv;<sub>t</sub>",
+  "Phi_1_t": {
+    "id": "Phi_1_t",
+    "name": "External influx disease 1",
+    "math": "&phiv;<sub>1</sub>(t)",
     "min": 0.0,
-    "max": 10.0,
+    "max": 5.,
     "value": 1.,
-    "description": "Number of new infections added by external influx.",
+    "description": "New infections added by external influx (per thousand).",
+    "change_points": 0,
+    "peak": 0,
+  },
+  "Phi_2_t": {
+    "id": "Phi_2_t",
+    "name": "External influx disease 2",
+    "math": "&phiv;<sub>2</sub>(t)",
+    "min": 0.0,
+    "max": 5.,
+    "value": 1.,
+    "description": "New infections added by external influx (per thousand).",
     "change_points": 0,
     "peak": 0,
   }
@@ -641,12 +607,12 @@ function _setup_modulation_parameter(main_div, parameters) {
       },
       xAxis: {
         title: {
-          text: "Time in years",
+          text: "Time in days",
           useHTML: true,
         },
       },
       tooltip: {
-        headerFormat: 'Year {point.key}<br/>',
+        headerFormat: 'Day {point.key}<br/>',
         pointFormat: '{series.name}: <b>{point.y:.2f}</b><br/>',
         shared: true,
         valueDecimals: 2,
@@ -1028,7 +994,6 @@ function setup_parameter_sliders() {
   // Hard defined parameters
   var main_div = document.getElementById("main_parameters");
   let count = 1;
-//  console.log(main_parameters);
   for (key in main_parameters) {
     _add_sliders_to_div(main_div, main_parameters[key])
     if (count != Object.keys(main_parameters).length) {
@@ -1041,7 +1006,6 @@ function setup_parameter_sliders() {
   //Seasonality parameters
   var main_div = document.getElementById("season_parameters");
   count = 1;
-//  console.log(season_parameters);
   for (key in season_parameters) {
     _add_sliders_to_div(main_div, season_parameters[key])
     if (count != Object.keys(season_parameters).length) {
@@ -1051,32 +1015,17 @@ function setup_parameter_sliders() {
   }
   set_sliders_to_dict(main_div, "season_parameters");
 
-  //Model parameters
-  var main_div = document.getElementById("parameters");
-
+  //Feedback parameters
+  var main_div = document.getElementById("feedback_parameters");
   count = 1;
-  for (key in parameters) {
-    _add_sliders_to_div(main_div, parameters[key])
-
-    if (count != Object.keys(parameters).length) {
+  for (key in feedback_parameters) {
+    _add_sliders_to_div(main_div, feedback_parameters[key])
+    if (count != Object.keys(feedback_parameters).length) {
       main_div.appendChild(document.createElement("hr"))
     }
     count++;
   }
-  set_sliders_to_dict(main_div, "parameters");
-
-
-  //Initial values
-  count = 1;
-  var main_div = document.getElementById("initials");
-  for (key in initials) {
-    _add_sliders_to_div(main_div, initials[key])
-    if (count != Object.keys(initials).length) {
-      main_div.appendChild(document.createElement("hr"))
-    }
-    count++;
-  }
-  set_sliders_to_dict(main_div, "initials");
+  set_sliders_to_dict(main_div, "feedback_parameters");
 
   //Lockdown modulation
   var main_div = document.getElementById("contact");

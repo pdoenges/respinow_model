@@ -77,8 +77,8 @@ public:
 	// Parameters second order (time dependent)
 	// small class which allows easy modeling
 	TimeDependentParameter k{1}; // Contacts
-	TimeDependentParameter Phi_1{0.001}; // Influx
-	TimeDependentParameter Phi_2{0.001};
+	TimeDependentParameter Phi_1{1}; // Influx
+	TimeDependentParameter Phi_2{1};
 	void set_k(TimeDependentParameter k);
 	void set_Phi_1(TimeDependentParameter p);
 	void set_Phi_2(TimeDependentParameter p);
