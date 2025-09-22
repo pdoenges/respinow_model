@@ -73,6 +73,8 @@ EMSCRIPTEN_BINDINGS(model) {
 		.property("omega_2",&Model::omega_2)
 		.property("sigma_1",&Model::sigma_1)
 		.property("sigma_2",&Model::sigma_2)
+		.property("kappa_1",&Model::kappa_1)
+		.property("kappa_2",&Model::kappa_2)
 		.property("nu_1",&Model::nu_1)
 		.property("nu_2",&Model::nu_2)
 		.property("d0_1",&Model::d0_1)

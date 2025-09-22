@@ -151,11 +151,11 @@ double Model::Gamma_2(double t){
 }
 
 double Model::F_1(SV current, double t){
-	return k(t) * beta_1 * Gamma_1(t) * (B(current)*I_1(current)+Phi_1(t)/1000.);
+	return (1-kappa_1*(1-k(t))) * beta_1 * Gamma_1(t) * (B(current)*I_1(current)+Phi_1(t)/1000.);
 }
 
 double Model::F_2(SV current, double t){
-	return k(t) * beta_2 * Gamma_2(t) * (B(current)*I_2(current)+Phi_2(t)/1000.);
+	return (1-kappa_2*(1-k(t))) * beta_2 * Gamma_2(t) * (B(current)*I_2(current)+Phi_2(t)/1000.);
 }
 
 double Model::Fs_1(SV current, double t){

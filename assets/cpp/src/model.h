@@ -53,6 +53,10 @@ public:
 		= 0.5;
 	double sigma_2
 		= 0.5;
+	double kappa_1				// how strongly k(t) effects the disease spread
+		= 1;
+	double kappa_2
+		= 1;
 	double nu_1						// strength of seasonality
 		= 0.2;
 	double nu_2

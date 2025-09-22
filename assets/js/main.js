@@ -5,7 +5,6 @@
 // -> run
 // -> Update charts
 var t_max = 10 * 360.0;
-const SUSCEPTIBLE = 1e6;
 
 // ---------------------------------------------------------------------------- //
 // Model
@@ -28,6 +27,7 @@ function setup_model() {
     setTimeout(setup_model, 10);
     return;
   }
+  on_click_inf(undefined, spezial["k_t"], 6*360, 200, -0.8);     // adds a lockdown event
   model_run();
 }
 function model_run() {
@@ -45,6 +45,9 @@ function model_run() {
   }
   for (key in season_parameters) {
     params[key] = parseFloat(season_parameters[key]["value"])
+  }
+  for (key in feedback_parameters) {
+    params[key] = parseFloat(feedback_parameters[key]["value"])
   }
   for (key in spezial) {
     params[key] = spezial[key]["cpp"]
@@ -91,6 +94,7 @@ function update_model_params(model, kwargs) {
     "sigma_1", "sigma_2",
     "nu_1", "nu_2",
     "d0_1", "d0_2",
+    "kappa_1", "kappa_2",
     "theta_1", "theta_2",
     "k_min", "H_thres", "epsilon",
     "k_t", "Phi_1_t", "Phi_2_t"];
@@ -216,7 +220,7 @@ var main_parameters = {
     "math": "&beta;<sub>1</sub>",
     "min": 0.10,
     "max": 0.50,
-    "value": 0.20,
+    "value": 0.30,
     "description": "Transition rate of the first disease."
   },
   "beta_2": {
@@ -225,7 +229,7 @@ var main_parameters = {
     "math": "&beta;<sub>2</sub>",
     "min": 0.10,
     "max": 0.50,
-    "value": 0.20,
+    "value": 0.25,
     "description": "Transition rate of the second disease."
   },
   "gamma_1": {
@@ -270,7 +274,7 @@ var main_parameters = {
     "math": "&sigma;<sub>1</sub>",
     "min": 0.0,
     "max": 1.0,
-    "value": 0.50,
+    "value": 0.00,
     "description": "Fraction of how much immunity against second disease protects against first disease."
   },
   "sigma_2": {
@@ -279,8 +283,26 @@ var main_parameters = {
     "math": "&sigma;<sub>2</sub>",
     "min": 0.0,
     "max": 1.0,
-    "value": 0.50,
+    "value": 0.00,
     "description": "Fraction of how much immunity against first disease protects against second disease."
+  },
+  "kappa_1": {
+    "id": "kappa_1",
+    "name": "Strength of k(t) on disease 1",
+    "math": "&kappa;<sub>1</sub>",
+    "min": 0.0,
+    "max": 1.0,
+    "value": 1.0,
+    "description": "How strongly the first disease is affected by external modulation of the contact rate, e.g. lockdowns."
+  },
+  "kappa_2": {
+    "id": "kappa_2",
+    "name": "Strength of k(t) on disease 2",
+    "math": "&kappa;<sub>2</sub>",
+    "min": 0.0,
+    "max": 1.0,
+    "value": 0.5,
+    "description": "How strongly the second disease is affected by external modulation of the contact rate, e.g. lockdowns."
   },
 }
 
@@ -348,7 +370,7 @@ var feedback_parameters = {
     "math": "k<sub>min</sub>",
     "min": 0.0,
     "max": 1.0,
-    "value": 0.2,
+    "value": 0.5,
     "description": "Minimal contact rate reached by voluntary contact reduction."
   },
 //  "H_thres": {
@@ -459,12 +481,12 @@ var initials = {
 var spezial = {
   "k_t": {
     "id": "k_t",
-    "name": "Intensity of contagious contacts",
+    "name": "External change of contact rate",
     "math": "k<sub>t</sub>",
     "min": 0.0,
     "max": 2.0,
     "value": 1.0,
-    "description": "Modulation parameter for defining the potentially changing contact behaviour of the population.",
+    "description": "Modulation parameter for external changes of the contact rate, e.g. lockdowns.",
     "change_points": 0,
     "peak": 0,
   },
@@ -735,77 +757,7 @@ function _setup_modulation_parameter(main_div, parameters) {
     })
   }
 
-  function on_click_inf(event, parameter) {
-    //Get chart
-    let chart = charts[parameter["id"]];
 
-    //Create an inputevent
-    parameter["cpp"].add_inputevent(12.5, 0.0, 0.5);
-
-    //Count number of peak
-    parameter["peak"]++;
-
-    let series = chart.addSeries({
-      stickyTracking: false,
-      dragDrop: {
-        draggableX: true,
-        draggableY: true,
-        dragMaxY: parameter["max"],
-        dragMinY: parameter["min"]
-      },
-      data: [{
-        name: "Bound 1",
-        x: 10,
-        y: 0.0,
-      },
-      {
-        name: "Bound 2",
-        x: 9.5,
-        y: 0.5,
-      }],
-      name: "Peak " + String(parameter["peak"]),
-      lineWidth: 0,
-      states: {
-        hover: {
-          lineWidthPlus: 0
-        }
-      },
-      marker: {
-        radius: 7,
-        symbol: 'square',
-        enabled: true
-      },
-      point: {
-        stickyTracking: false,
-        events: {
-          drag: function (e) {
-            //update time_series_parameter
-            min_y = this.series.dataMin;
-            max_y = this.series.dataMax;
-            mean = this.series.data[0].x
-            change = this.series.data[0].y - this.series.data[1].y
-            variance = Math.abs(this.series.data[0].x - this.series.data[1].x)
-            let inf_index = 0;
-            for (let i = 0; i < this.series.index; i++) {
-              if (chart.series[i].name.includes("Inputevent")) {
-                inf_index++;
-              }
-            }
-
-            parameter["cpp"].update_inputevent(inf_index, mean, variance, change);
-
-            //Update main series
-            let data_update = []
-            for (let t = 0; t < t_max; t++) {
-              data_update[t] = parameter["cpp"].eval(t);
-            }
-            chart.series[0].update({ data: data_update });
-            throttle(model_run());
-          }
-        }
-      }
-    })
-  }
 
   let count = 1;
   for (key in parameters) {
@@ -861,6 +813,89 @@ function _setup_modulation_parameter(main_div, parameters) {
     count++;
   }
 }
+
+function on_click_inf(event, parameter, mean=12.5, variance=0.0, change=0.5) {
+  //Get chart
+  let chart = charts[parameter["id"]];
+
+  //Create an inputevent
+  parameter["cpp"].add_inputevent(mean, variance, change);
+
+  //Count number of peak
+  parameter["peak"]++;
+
+  let series = chart.addSeries({
+    stickyTracking: false,
+    dragDrop: {
+      draggableX: true,
+      draggableY: true,
+      dragMaxY: parameter["max"],
+      dragMinY: parameter["min"]
+    },
+    data: [{
+      name: "Bound 1",
+      x: mean,
+      y: 1.0,
+    },
+    {
+      name: "Bound 2",
+      x: mean-variance,
+      y: 1-change,
+    }],
+    name: "Peak " + String(parameter["peak"]),
+    lineWidth: 0,
+    states: {
+      hover: {
+        lineWidthPlus: 0
+      }
+    },
+    marker: {
+      radius: 7,
+      symbol: 'square',
+      enabled: true
+    },
+    point: {
+      stickyTracking: false,
+      events: {
+        drag: function (e) {
+          //update time_series_parameter
+          min_y = this.series.dataMin;
+          max_y = this.series.dataMax;
+          mean = this.series.data[0].x
+          change = this.series.data[0].y - this.series.data[1].y
+          variance = Math.abs(this.series.data[0].x - this.series.data[1].x)
+          let inf_index = 0;
+          for (let i = 0; i < this.series.index; i++) {
+            if (chart.series[i].name.includes("Inputevent")) {
+              inf_index++;
+            }
+          }
+
+          parameter["cpp"].update_inputevent(inf_index, mean, variance, change);
+
+          //Update main series
+          let data_update = []
+          for (let t = 0; t < t_max; t++) {
+            data_update[t] = parameter["cpp"].eval(t);
+          }
+          chart.series[0].update({ data: data_update });
+          throttle(model_run());
+        }
+      }
+    }
+  })
+  
+  //Update main series during init
+  let data_update = []
+  for (let t = 0; t < t_max; t++) {
+    data_update[t] = parameter["cpp"].eval(t);
+  }
+  chart.series[0].update({ data: data_update });
+  throttle(model_run());
+}
+
+
+
 
 
 function old() {
@@ -1105,7 +1140,7 @@ function _add_highchart_to_div(main_div, chart_params) {
       title: {
         text: 'Time in years',
       },
-      min: 0,   // min of x-axis
+      min: 1,   // min of x-axis
     },
     yAxis: {
       title: {
@@ -1203,7 +1238,7 @@ function setup_highcharts() {
       "id": "Compartments",
       "title": "Model compartments",
       "ymin": 0,
-      "ymax": SUSCEPTIBLE,
+      "ymax": 1,
       "label_yAxis": "Fraction of population",
       "data_placeholder": [
         { visible: true },
