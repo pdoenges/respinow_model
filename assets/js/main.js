@@ -840,7 +840,7 @@ function on_click_inf(event, parameter, mean=12.5, variance=0.0, change=0.5) {
     {
       name: "Bound 2",
       x: mean-variance,
-      y: 1-change,
+      y: 1+change,
     }],
     name: "Peak " + String(parameter["peak"]),
     lineWidth: 0,
@@ -862,7 +862,7 @@ function on_click_inf(event, parameter, mean=12.5, variance=0.0, change=0.5) {
           min_y = this.series.dataMin;
           max_y = this.series.dataMax;
           mean = this.series.data[0].x
-          change = this.series.data[0].y - this.series.data[1].y
+          change = this.series.data[1].y - 1
           variance = Math.abs(this.series.data[0].x - this.series.data[1].x)
           let inf_index = 0;
           for (let i = 0; i < this.series.index; i++) {
@@ -1146,6 +1146,7 @@ function _add_highchart_to_div(main_div, chart_params) {
       title: {
         text: chart_params["label_yAxis"],
       },
+      min: chart_params["ymin"],
       ceiling: chart_params["ymax"],
     },
     credits: {
