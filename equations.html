@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" id="top">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Two pathogen model</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Bootstrap CSS -->
+  <link href="assets/css/bootstrap/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@200;400;500&display=swap" rel="stylesheet"> 
+
+  <!-- Master CSS -->
+  <link href="assets/css/main.css" rel="stylesheet">
+
+
+  <!-- FavIcon -->
+  <link rel="shortcut icon" href="#">
+<!--  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest"> -->
+
+  <!-- Mathjax for equations -->
+	<script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+
+</head>
+
+<body>
+  <header id="header">
+    <nav class="navbar navbar-expand navbar-light bg-light">
+      <a class="navbar-brand" href="/">
+<!--        <img src="assets/img/Logo.png" alt="logo" height="50" width="100"> -->
+        <a class="nav-link" href="./"><b><h2>Differential lockdowns in multipathogen systems</h2></b></a>
+      </a>
+      </ul>
+     </nav>
+    </div>
+  </header>
+
+
+	<main class="main container absolute" role="main" style="display: flex;justify-content: center;flex-wrap: wrap;">
+		<div id="Equations" class="card w-75">
+				<div class="card-header">
+					Model details
+				</div>
+				<div class="card-body">
+					<h5 class=card-title>Equations</h5>
+					<p class="card-text">
+						The model features the 9 possible combinations of Susceptible - Infecious - Removed compartments for two independent diseases.
+
+						$$\begin{align}
+					    &X_{SS} &=&&& \omega_1 X_{RS}
+					           &-& \mathcal{F}_1 X_{SS}
+					           &+& \omega_2 X_{SR}
+					           &-& \mathcal{F}_2 X_{SS}\\*
+					    &X_{SI} &=&&& \omega_1 X_{RI}
+					           &-& \mathcal{F}^\star_1 X_{SI}
+					           &+& \mathcal{F}_2 X_{SS}
+					           &-& \gamma_2  X_{SI}\\*
+					    &X_{SR} &=&&& \omega_1 X_{RR}
+					           &-& \mathcal{F}^\star_1 X_{SR}
+					           &+& \gamma_2 X_{SI}
+					           &-& \omega_2 X_{SR}\\*
+					    &X_{IS} &=&&& \mathcal{F}_1 X_{SS}
+					           &-& \gamma_1 X_{IS}
+					           &+& \omega_2 X_{IR}
+					           &-& \mathcal{F}^\star_2 X_{IS}\\*
+					    &X_{II} &=&&& \mathcal{F}^\star_1 X_{SI}
+					           &-& \gamma_1 X_{II}
+					           &+& \mathcal{F}^\star_2 X_{IS}
+					           &-& \gamma_2  X_{II}\\*
+					    &X_{IR} &=&&& \mathcal{F}^\star_1 X_{SR}
+					           &-& \gamma_1 X_{IR}
+					           &+& \gamma_2 X_{II}
+					           &-& \omega_2 X_{IR}\\*
+					    &X_{RS} &=&&& \gamma_1 X_{IS}
+					           &-& \omega_1 X_{RS}
+					           &+& \omega_2 X_{RR}
+					           &-& \mathcal{F}^\star_2 X_{RS}\\*
+					    &X_{RI} &=&&& \gamma_1 X_{II}
+					           &-& \omega_1 X_{RI}
+					           &+& \mathcal{F}^\star_2 X_{RS}
+					           &-& \gamma_2  X_{RI}\\*
+					    &X_{RR} &=&&& \gamma_1 X_{IR}
+					           &-& \omega_1 X_{RR}
+					           &+& \gamma_2 X_{RI}
+					           &-& \omega_2 X_{RR}
+						\end{align}$$
+
+						The non-trivial forces of infection \( \mathcal{F}^{(\star)}_i \) are calculated via multiple steps as follows:
+
+						$$\begin{align}
+						    &I_1^\star &=&&&
+						        \underbrace
+						        {X_{IS}+X_{II}+X_{IR}
+						        }_\text{infections with first pathogen}\\*
+						    &I_2^\star &=&&&
+						        \underbrace{
+						        X_{SI}+X_{II}+X_{RI}
+						        }_\text{infections with second pathogen}\\*
+						    &H &=&&&
+						        \underbrace{
+						        \vartheta_1 I_1^\star + \vartheta_2 I_2^\star
+						        }_\text{perceived risk}\\*
+						    &\mathcal{F}_i &=&&&
+						        \underbrace{
+						        (1-\kappa_i (1-k(t))) \cdot \beta_i \cdot \Gamma_i(t) \cdot (\mathcal{B}(H) I_i^\star + \Phi_i)
+						        }_\text{force of infection}\\*
+						    &\mathcal{F}^\star_i &=&&&
+						        \underbrace{(1-\sigma_i) \mathcal{F}_i
+						        }_\text{including cross-immunity} \\*
+						    &\Gamma_i(t) &=&&&
+						        \underbrace{
+						        1 + \mu_i \cos\left( 2\pi \frac{t+d^0_i}{360} \right) }_\text{seasonality}\\*
+						    &\mathcal{B}(H) &=&&&
+						        \underbrace{
+						        k_\mathrm{min} + \frac{1-k_\mathrm{min}}{H_\mathrm{thres}} \cdot \epsilon \cdot \ln\left(1 + \exp\left( \frac{1}{\epsilon} \left( H_\mathrm{thres} - H \right) \right)\right)
+						        }_\text{behavioral feedback (softplus)}
+						\end{align}$$
+
+
+					</p>
+				</div>
+		</div>
+
+  </main>
+
+
+
+</body>
+</html>
